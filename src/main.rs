@@ -1,13 +1,12 @@
 use tracing_subscriber::fmt::format::FmtSpan;
 use warp::{self, http::Method, Filter};
 
-mod helpers;
 mod db;
+mod helpers;
+mod route_handlers;
 mod routes;
 mod schema;
-mod store;
 mod types;
-mod route_handlers;
 
 #[tokio::main]
 async fn main() {
@@ -40,6 +39,7 @@ async fn main() {
         .allow_header("content-type")
         .allow_methods(&[Method::PUT, Method::DELETE, Method::GET, Method::POST]);
 
+    // Create a new connecton per request. Is it faster to reuse the PooledConnections?
     let pool = helpers::pg_pool();
 
     let routes = routes::question::api_filters(pool)
@@ -49,8 +49,5 @@ async fn main() {
     warp::serve(routes).run(([127, 0, 0, 1], 1337)).await;
 }
 
-
-
 // TODO -> ROUTE: DELETE /questions/:questionId {empty body; return HTTP status code}
 // TODO -> ROUTE: POST /answers {URL encoded body; return HTTP status code}
-

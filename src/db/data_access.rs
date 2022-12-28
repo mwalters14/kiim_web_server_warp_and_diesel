@@ -15,10 +15,7 @@ impl DBAccessManager {
         DBAccessManager { connection }
     }
 
-    pub fn create_question(
-        &mut self, 
-        dto: CreateQuestionDTO
-    ) -> Result<QuestionDTO, AppError> {
+    pub fn create_question(&mut self, dto: CreateQuestionDTO) -> Result<QuestionDTO, AppError> {
         use schema::questions;
 
         diesel::insert_into(questions::table) // insert into books table
