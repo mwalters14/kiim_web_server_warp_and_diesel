@@ -14,8 +14,19 @@ impl DBAccessManager {
     pub fn new(connection: PooledPg) -> DBAccessManager {
         DBAccessManager { connection }
     }
+    
+    pub fn get_question(&mut self) -> Result<Vec<QuestionDTO>, AppError> {
+        use schema::questions;
 
-    pub fn create_question(&mut self, dto: CreateQuestionDTO) -> Result<QuestionDTO, AppError> {
+        questions::dsl::questions
+            .load::<QuestionDTO>(&mut self.connection)
+            .map_err(|err| AppError::from_diesel_err(err, "Error retrieving questions."))
+    }
+     
+    pub fn create_question(
+        &mut self, 
+        dto: CreateQuestionDTO
+    ) -> Result<QuestionDTO, AppError> {
         use schema::questions;
 
         diesel::insert_into(questions::table) // insert into books table
@@ -23,14 +34,6 @@ impl DBAccessManager {
             .get_result(&mut self.connection) // execute query
             .map_err(|err| AppError::from_diesel_err(err, "while creating question."))
         // if error occurred map it to AppError
-    }
-
-    pub fn get_question(&mut self) -> Result<Vec<QuestionDTO>, AppError> {
-        use schema::questions;
-
-        questions::dsl::questions
-            .load::<QuestionDTO>(&mut self.connection)
-            .map_err(|err| AppError::from_diesel_err(err, "Error retrieving questions."))
     }
 
     pub fn update_question(
@@ -45,5 +48,17 @@ impl DBAccessManager {
             .set(updated_question)
             .get_result(&mut self.connection)
             .map_err(|err| AppError::from_diesel_err(err, "Error updating question."))
+    }
+
+    pub fn delete_question(
+        &mut self,
+        id: i32,
+    ) -> Result<usize, AppError>{
+        use schema::questions;
+
+        diesel::delete(questions::dsl::questions)
+            .filter(questions::dsl::id.eq(id))
+            .execute(&mut self.connection)
+            .map_err(|err| AppError::from_diesel_err(err, "Could not delete question."))
     }
 }

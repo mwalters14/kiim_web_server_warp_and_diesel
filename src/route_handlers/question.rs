@@ -34,6 +34,18 @@ pub async fn update_question_route_handle(
     Ok(warp::reply::with_status("Question updated", StatusCode::OK))
 }
 
+pub async fn delete_question_route_handle(
+    id: i32,
+    mut db_manager: DBAccessManager,
+) -> Result<impl warp::Reply, warp::Rejection> {
+    let _response = db_manager.delete_question(id);
+
+    Ok(warp::reply::with_status(
+        "Question delete success.",
+        StatusCode::OK
+    ))
+}
+
 pub async fn add_question_route_handle(
     mut db_manager: DBAccessManager,
     new_question: CreateQuestionDTO,
